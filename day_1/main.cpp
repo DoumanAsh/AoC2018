@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
     } else if (strncmp(argv[1], "2", 1) == 0) {
         return part2();
     } else {
-        std::cerr << "Unknown part '" << argv[1] << "'.Valid values: 1, 2\n";
+        std::cerr << "Unknown part '" << argv[1] << "'. Valid values: 1, 2\n";
         return 1;
     }
 }

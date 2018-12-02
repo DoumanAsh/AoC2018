@@ -23,3 +23,4 @@ gcc_set_flags_if("-Wall -Wextra")
 # SRC
 ##########################
 add_subdirectory("day_1/")
+add_subdirectory("day_2/")
