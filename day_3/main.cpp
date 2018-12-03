@@ -3,6 +3,8 @@
 #include <array>
 #include <bitset>
 #include <vector>
+#include <algorithm>
+#include <type_traits>
 
 #include "claim.hpp"
 
@@ -24,7 +26,7 @@ ClaimState& operator++(ClaimState &self) {
 
 ClaimState operator++(ClaimState &self, int) {
     ClaimState result = self;
-    ++result;
+    ++self;
     return result;
 }
 
@@ -50,23 +52,75 @@ std::vector<Claim> get_claims() {
     return result;
 }
 
-void set_fabric(const std::vector<Claim>& claims) noexcept {
+template<typename Fn>
+void for_each_claim(const std::vector<Claim>& claims, Fn cb) {
+    for_each_claim(claims, cb, [](int) { return true; });
+}
+
+
+/**
+ * Iterates over fabric state accordingly to claims.
+ *
+ * @param claims Obviously claims.
+ * @param cb Callback to call on each state.
+ * @param cb_end Callback to call when claim is ended. Return false to stop iteration.
+ */
+template<typename Fn, typename FnEnd>
+void for_each_claim(const std::vector<Claim>& claims, Fn cb, FnEnd cb_end) {
+    static_assert(std::is_invocable<Fn, ClaimState&>::value, "Fn must be callable and accept &ClaimState as argument");
+    static_assert(std::is_invocable<FnEnd, int>::value, "Fn must be callable and accept int as argument");
+
     for (const auto& claim : claims) {
-        for (size_t x = claim.coords.x + 1; x < claim.size.x; x++) {
-            for (size_t y = claim.coords.y + 1; y < claim.size.y; y++) {
-                FABRIC[x][y]++;
+        size_t x = claim.coords.x + 1;
+        size_t x_end = x + claim.size.x;
+        for (; x < x_end; x++) {
+            size_t y = claim.coords.y + 1;
+            size_t y_end = y + claim.size.y;
+            for (; y < y_end; y++) {
+                cb(FABRIC[x][y]);
             }
+        }
+
+        if (!cb_end(claim.id)) {
+            break;
         }
     }
 }
 
 int part1() {
-    auto claims = get_claims();
+    const auto claims = get_claims();
+    for_each_claim(claims, [](ClaimState& state) { state++; });
+
+    size_t overlap_size = 0;
+    for (const auto& fabrics : FABRIC) {
+        overlap_size += std::count_if(fabrics.cbegin(), fabrics.cend(), [](ClaimState state) { return state == ClaimState::Multiple; });
+    }
+
+    std::cout << "Result(Part1): " << overlap_size << "\n";
 
     return 0;
 }
 
 int part2() {
+    const auto claims = get_claims();
+    for_each_claim(claims, [](ClaimState& state) { state++; });
+
+    size_t overlap_size = 0;
+    for_each_claim(claims,
+                   [&overlap_size](ClaimState& state) { overlap_size += static_cast<size_t>(state == ClaimState::Multiple); },
+                   [&overlap_size](int id) {
+                       if (overlap_size == 0) {
+                           std::cout << "Result(Part2): " << id << "\n";
+                           return false;
+                       } else {
+                           overlap_size = 0;
+                           return true;
+                       }
+    });
+
+    if (overlap_size != 0) {
+        std::cout << "Result(Part2): ERROR CANNOT FIND!\n";
+    }
 
     return 0;
 }
