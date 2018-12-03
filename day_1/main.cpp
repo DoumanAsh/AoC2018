@@ -2,6 +2,7 @@
 #include <iterator>
 #include <unordered_set>
 #include <vector>
+#include <cstring>
 
 int part1() {
     int freq = 0;

@@ -2,6 +2,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <cstring>
 
 int part1() {
     int twos = 0;
