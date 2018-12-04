@@ -1,3 +1,5 @@
+#include "../common/rt.hpp"
+
 #include <iostream>
 #include <cstring>
 #include <array>
@@ -126,18 +128,5 @@ int part2() {
 }
 
 int main(int argc, char * argv[]) {
-    if (argc < 2) {
-        std::cerr << "Insufficient argument. Please specify part number\n";
-        return 1;
-    }
-
-    std::cin >> (std::showpos);
-    if (strncmp(argv[1], "1", 1) == 0) {
-        return part1();
-    } else if (strncmp(argv[1], "2", 1) == 0) {
-        return part2();
-    } else {
-        std::cerr << "Unknown part '" << argv[1] << "'. Valid values: 1, 2\n";
-        return 1;
-    }
+    return rt::main(argc, argv, part1, part2);
 }
